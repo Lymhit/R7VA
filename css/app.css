@@ -1,0 +1,21 @@
+input::-webkit-input-placeholder {
+  color: #ddd !important;
+}
+input::-moz-placeholder {
+  color: #ddd !important;
+}
+input:-moz-placeholder { /* Older versions of Firefox */
+  color: #ddd !important;
+}
+input:-ms-input-placeholder {
+  color: #ddd !important;
+}
+.bg-warning {
+  background-color :rgba(255, 193, 7, 0.5) !important
+}
+.bg-success {
+  background-color: rgba(40, 167, 69, 0.5) !important;
+}
+.bg-danger {
+  background-color:rgb(220, 53, 69, 0.5) !important;
+}
