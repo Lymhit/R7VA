@@ -6,21 +6,22 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
+    
     <title>R7VA</title>
 </head>
 <body>
 <div id="app" v-cloak>
     <main role="main" class="container">
-    <h1 class="mt-3">R7VA 2018</h1>
+    <h1 class="mt-3">rallye7valleesartois</h1>
         <ul class="nav nav-tabs position-relative" id="nav-tab">
             <li class="nav-item" v-for="(menu, k) in specials">
                 <a class="nav-link"  v-bind:class="{ active: k === 0 }" data-toggle="tab" :href='"#menu"+k'>Secteur {{menu.nom}}</a>
             </li>
             <li  class="nav-item disable">
-                <a class="nav-link" data-toggle="modal" data-target="#secteur_Modal">+</a>
+                <a class="nav-link" data-toggle="modal" data-target="#secteur_Modal"><i class="fas fa-plus-square"></i></a>
             </li>
             <li  class="nav-item disable position-absolute float-right" style='right:0'>
-                <a class="nav-link" data-toggle="modal" data-target="#conf_Modal">Ⓜ</a>
+                <a class="nav-link" data-toggle="modal" data-target="#conf_Modal"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
         <div class="tab-content card border-top-0" style="border-radius: 0px 0px .25em .25em;">
@@ -34,18 +35,22 @@
                         <span class="input-group-text" style="max-width:  100px;min-width:  100px;">Références</span>
                     </div>
                     <input v-for="(ref,ref_k) in special.ref" v-on:change="add_to_ref(k,ref_k)" class="ref form-control" maxlength="1" type="text" :id="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="ref" />
-                    <input v-on:click="remove_ref(k)" class="ref form-control btn btn-outline-danger" style="max-width: 41px;min-width: 41px" type="button" value="-" />
-                    <input v-on:click="add_ref(k)" class="ref form-control btn btn-outline-primary" style="max-width: 41px;min-width: 41px" type="button" value="+" />
+                    <div v-on:click="remove_ref(k)" class="ref form-control btn btn-outline-danger" style="max-width: 41px;min-width: 41px">
+                    <i class="fas fa-minus"></i>
+                    </div>
+                    <div v-on:click="add_ref(k)" class="ref form-control btn btn-outline-primary" style="max-width: 41px;min-width: 41px">
+                        <i class="fas fa-plus"></i>
+                    </div>
                     </div>
                 <hr />
                 <div v-for="(team,team_k) in special.equipes" :id="'team_'+team_k+'_sec_'+k">
                     <label>Équipe {{team.nom}}</label>
-                    <button type="button" v-on:click="confirmDelete(team_k)" v-if="special.equipes.length > 1" class="close">
+                    <button type="button" v-on:click="confirmDelete(team_k)" class="close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <span class="input-group-text" style="max-width:  100px;min-width:  100px;">Résultat</span>
+                            <span class="input-group-text" style="max-width:  100px;min-width:  100px;"><i class="fas" style="margin: auto;" v-bind:class="{'fa-car-side': team.type === 1, 'fa-truck-monster': team.type === 2}"></i></span>
                         </div>
                         <input v-for="(ref,ref_k) in special.ref" v-on:change="add_to_team_ref(k,team_k,ref_k)" maxlength="1" type="text" class="team form-control" :id="'sec_'+k+'_team_'+team_k+'_ref_'+ref_k" :data-refid="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="team.resultat[ref_k]" />
                         <div class="input-group-append  border-success" v-on:click="compare_element()">
@@ -87,35 +92,62 @@
         </div>
     </div>
     <div class="modal fade" id="conf_Modal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Modifier la configuration</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="recipient-name" class="col-form-label">Points en cas de correspondance:</label>
-                            <input type="number" class="form-control" id="add_conf_win" v-on:keyup.enter="" :value="this.conf.win">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Menu</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5><i class="fas fa-save"></i> Sauvegarde</h5>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="d-block"><i class="fas fa-download"></i> Enregistrer</label>
+                                <button v-on:click='backup_conf("resultat");' type="button" class="btn btn-outline-secondary"><small>Résultats</small></button>
+                                <button v-on:click='backup_conf("configuration");' type="button" class="btn btn-outline-secondary"><small>Configuration</small></button> 
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-block"><i class="fas fa-upload"></i> Réstaurer</label>
+                                <div class="input-group mb-3">
+                                <div class="custom-file">
+                                    <input type="file" v-on:change='restor_conf();' class="custom-file-input" id="inputGroupFile01">
+                                    <label class="custom-file-label" for="inputGroupFile01">Séléctionner un fichier</label>
+                                </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <button v-on:click='default_conf();' type="button" class="btn btn-outline-secondary"><small>Réstaurer par défaut</small></button>
+                            </div>
+                            <div class="text-center w-100">
+                                <span id="msg_content"></span>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="recipient-name" class="col-form-label">Points en cas de lettres présentes mais non correspondantes</label>
-                            <input type="number" class="form-control" id="add_conf_draw" v-on:keyup.enter="" :value="this.conf.draw">
-                        </div>
-                        <div class="form-group">
-                            <label for="recipient-name" class="col-form-label">Points en cas de non correspondance:</label>
-                            <input type="number" class="form-control" id="add_conf_loose" v-on:keyup.enter="" :value="this.conf.loose">
-                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" v-on:click="changeconf()">Save changes</button>
+                    <hr />
+                    <h5><i class="fas fa-clipboard-check"></i> Configuration des points</h5>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">En cas de correspondance:</label>
+                        <input type="number" class="form-control" id="add_conf_win" v-on:keyup.enter="" :value="this.conf.win" style="width: 64px;display: initial;">
                     </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">En cas de lettres présentes mais non correspondantes:</label>
+                        <input type="number" class="form-control" id="add_conf_draw" v-on:keyup.enter="" :value="this.conf.draw" style="width: 64px;display: initial;">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">En cas de non correspondance:</label>
+                        <input type="number" class="form-control" id="add_conf_loose" v-on:keyup.enter="" :value="this.conf.loose" style="width: 64px;display: initial;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" v-on:click="changeconf()">Enregister les changements</button>
                 </div>
             </div>
         </div>
+    </div>
     <div class="modal fade" id="team_Modal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -128,7 +160,17 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="recipient-name" class="col-form-label">Enter un nom:</label>
-                        <input type="text" class="form-control" id="add_team_name" v-on:keyup.enter="add_team()">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="add_team_name" v-on:keyup.enter="add_team()">
+                            <div class="input-group-append btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-outline-secondary active">
+                                    <input type="radio" name="options" id="add_team_name_option1" autocomplete="off" checked><i class="fas fa-car-side"></i>
+                                </label>
+                                <label class="btn btn-outline-secondary">
+                                    <input type="radio" name="options" id="add_team_name_option2" autocomplete="off"><i class="fas fa-truck-monster"></i>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -160,5 +202,6 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/vue.min.js"></script>
 <script src="js/app.js"></script>
+<script src="js/fontawesome.js"></script>
 </body>
 </html>

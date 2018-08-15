@@ -12,33 +12,38 @@ Vue.component("confirmation-modal", {
 		}
 	}
 });
-const app = new Vue({
+const vm = new Vue({
   el: '#app',
   data() {
     return{
       conf:{win:3,draw:1,loose:0},
-      specials:[{
-        nom:'exemple',
-        ref:[
-          'A',
-          'B',
-          'C'
-        ],
-        equipes:[
-          {
-            nom:'team 1', 
-            resultat : ['A','B','C']
-          },
-          {
-            nom:'team 2', 
-            resultat : ['C','B','A']
-          },
-          {
-            nom:'team 3', 
-            resultat : ['D','E','F']
-          },
-        ],
-      }],
+      specials:[
+        // {
+        // nom:'exemple',
+        // ref:[
+        //   'A',
+        //   'B',
+        //   'C'
+        // ],
+        // equipes:[
+        //   {
+        //     nom:'team 1',
+        //     type:1,
+        //     resultat : ['A','B','C']
+        //   },
+        //   {
+        //     nom:'team 2',
+        //     type:2,
+        //     resultat : ['C','B','A']
+        //   },
+        //   {
+        //     nom:'team 3',
+        //     type:1,
+        //     resultat : ['D','E','F']
+        //   },
+        // ],
+        // }
+      ],
       confirmModal:false,
       selectedTeam:null,
     }
@@ -59,9 +64,12 @@ const app = new Vue({
       if(name){
         $('#add_secteur_name')[0].value = null;
         var equipes = [];
-        for (var i = 0; i < this.specials[0].equipes.length; i++) {
-          var newLength = equipes.push({nom:this.specials[0].equipes[i].nom, resultat : ['']});
-        };
+        console.log(this.specials.length)
+        if(this.specials.length){
+          for (var i = 0; i < this.specials[0].equipes.length; i++) {
+            var newLength = equipes.push({nom:this.specials[0].equipes[i].nom,type:this.specials[0].equipes[i].type,resultat : ['']});
+          };
+        }
         var push_array = {
           nom:name,
           ref:[""],
@@ -76,12 +84,10 @@ const app = new Vue({
       }
     },
     remove_secteur(k){
-      if(k != 0){
         this.specials.splice(k, 1);
         localStorage.setItem('data', JSON.stringify(this.specials));
         $('#nav-tab li:nth-child('+k+') a').tab('show');
         this.compare_element();
-      }
     },
     add_ref(k){
       this.specials[k].ref.push('');
@@ -100,10 +106,15 @@ const app = new Vue({
     },
     add_team(k){
       var name = $('#add_team_name')[0].value;
+      if($('#add_team_name_option1')[0].checked){
+        atype=1;
+      } else {
+        atype=2;
+      }
       if(name){
         $('#add_team_name')[0].value = null;
         for (var i = 0; i < this.specials.length; i++) {
-          this.specials[i].equipes.push({nom: name,resultat:['']});
+          this.specials[i].equipes.push({nom: name,type:atype,resultat:['']});
         }
         localStorage.setItem('data', JSON.stringify(this.specials));
       }
@@ -196,9 +207,6 @@ const app = new Vue({
       this.remove_team(this.selectedTeam)
 		},
     changeconf(){
-      console.log($('#add_conf_win')[0].value)
-      console.log($('#add_conf_draw')[0].value)
-      console.log($('#add_conf_loose')[0].value)
       var array = {
         win:Number($('#add_conf_win')[0].value),
         draw:Number($('#add_conf_draw')[0].value),
@@ -206,6 +214,62 @@ const app = new Vue({
       };
       this.conf=array;
       localStorage.setItem('conf', JSON.stringify(array));
+    },
+    backup_conf(type){
+      if(type==="resultat"){
+        var data = [localStorage.data]
+      }
+      else if(type==="configuration"){
+        var data = [localStorage.conf]
+      }
+      else {return;}
+      var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+      if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, filename);
+      } else {
+        var link = document.createElement("a");
+        if (link.download !== undefined) { // feature detection
+          // Browsers that support HTML5 download attribute
+          var url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", 'Sauvegarde_'+type+'.R7VA');
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
+    },
+    restor_conf(){
+      var selectedFile = document.querySelector('input[type=file]').files[0];
+      var content = document.getElementById('msg_content');
+      var reader = new FileReader();
+      this.specials = null;
+      reader.onload = function(event) {
+        if(reader.result){
+          jsonredear = JSON.parse(reader.result)
+          if(jsonredear[0]){
+            if(jsonredear[0].nom){
+              content.innerHTML = 'Importation des résultats réussi';
+              localStorage.setItem('data', reader.result);
+              location.reload();
+            } 
+          } else {
+            content.innerHTML = 'Importation de la configuration réussi';
+            localStorage.setItem('conf', reader.result);
+            location.reload();
+          }
+        } else {
+          content.innerHTML = 'fichier vide';
+        }
+      };
+      if(localStorage.data) this.specials = JSON.parse(localStorage.data);
+      if(localStorage.conf) this.conf = JSON.parse(localStorage.conf);
+      reader.readAsText(selectedFile);
+    },
+    default_conf(){
+      localStorage.clear();
+      location.reload();
     },
   },
 })
