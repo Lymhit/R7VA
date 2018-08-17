@@ -132,9 +132,16 @@ const vm = new Vue({
       var name = $('#sec_'+k+'_ref_'+ref_k)[0].value.toUpperCase();
       this.specials[k].ref[ref_k] = name
       localStorage.setItem('data', JSON.stringify(this.specials));
-      var up = ref_k + 1;
-      if($('#sec_'+k+'_ref_'+up)[0]){
-        $('#sec_'+k+'_ref_'+up)[0].focus();
+      if(event.key != 'Backspace'){
+        var up = ref_k + 1;
+        if($('#sec_'+k+'_ref_'+up)[0]){
+          $('#sec_'+k+'_ref_'+up)[0].focus();
+        }
+      } else {
+        var up = ref_k - 1;
+        if($('#sec_'+k+'_ref_'+up)[0]){
+          $('#sec_'+k+'_ref_'+up)[0].focus();
+        }
       }
       this.compare_element();
     },
@@ -142,11 +149,29 @@ const vm = new Vue({
       var name = $('#sec_'+k+'_team_'+team_k+'_ref_'+ref_k)[0].value.toUpperCase();
       this.specials[k].equipes[team_k].resultat[ref_k] = name
       localStorage.setItem('data', JSON.stringify(this.specials));
-      var up = ref_k + 1;
-      if($('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0]){
-        $('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0].focus();
-      }
       this.compare_element();
+      if(event.key != 'Backspace'){
+        var up = ref_k + 1;
+        if($('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0]){
+          $('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0].focus();
+        } else {
+          var team_kup = team_k + 1;
+          if($('#sec_'+k+'_team_'+team_kup+'_ref_0')[0]){
+            $('#sec_'+k+'_team_'+team_kup+'_ref_0')[0].focus();
+          }
+        }
+      } else {
+        var up = ref_k - 1;
+        if($('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0]){
+          $('#sec_'+k+'_team_'+team_k+'_ref_'+up)[0].focus();
+        } else {
+          var team_kup = team_k - 1;
+          var last = $('[id^="sec_'+k+'_team_'+team_kup+'_ref"]').length - 1
+          if($('#sec_'+k+'_team_'+team_kup+'_ref_'+last)[0]){
+            $('#sec_'+k+'_team_'+team_kup+'_ref_'+last)[0].focus();
+          }
+        }
+      } 
     },
     compare_element(){
       for (var i = 0; i < this.specials.length; i++) {
@@ -154,42 +179,60 @@ const vm = new Vue({
         for (var x = 0; x < this.specials[i].equipes.length; x++) {
           var team = 0;
           for (var y = 0; y < this.specials[i].equipes[x].resultat.length; y++) {
+            $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-success');
+            $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-warning');
+            $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-danger');
+            $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('text-white');
             if($('#sec_'+i+'_team_'+x+'_ref_'+y).length){
               if($('#sec_'+i+'_team_'+x+'_ref_'+y)[0].value){
-              $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-success')
-              $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-warning')
-              $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('bg-danger')
-              $('#sec_'+i+'_team_'+x+'_ref_'+y).removeClass('text-white')
               if($('#sec_'+i+'_ref_'+y)[0].value === $('#sec_'+i+'_team_'+x+'_ref_'+y)[0].value){
-                team = team + this.conf.win
-                total = team
-                $('#team_'+x+'_sec_'+i+'_pts').html(total)
-                $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-success text-white')
+                team = team + this.conf.win;
+                total = team;
+                $('#team_'+x+'_sec_'+i+'_pts').val(total);
+                $('#total_pts_team_'+x+'_sec_'+i).html(total);
+                $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-success text-white');
                 } else {
                   if(this.specials[i].ref.indexOf($('#sec_'+i+'_team_'+x+'_ref_'+y)[0].value) >= 0){
                     if($('#sec_'+i+'_ref_'+y)[0].value){
-                      team = team + this.conf.draw
-                      total = team
-                      $('#team_'+x+'_sec_'+i+'_pts').html(total)
-                      $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-warning')
+                      team = team + this.conf.draw;
+                      total = team;
+                      $('#team_'+x+'_sec_'+i+'_pts').val(total);
+                      $('#total_pts_team_'+x+'_sec_'+i).html(total);
+                      $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-warning');
                     } else {
-                      team = team + this.conf.loose
-                      total = team
-                      $('#team_'+x+'_sec_'+i+'_pts').html(total)
-                      $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-danger text-white')
+                      team = team + this.conf.loose;
+                      total = team;
+                      $('#team_'+x+'_sec_'+i+'_pts').val(total);
+                      $('#total_pts_team_'+x+'_sec_'+i).html(total);
+                      $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-danger text-white');
                     }
                   }
                   if(this.specials[i].ref.indexOf($('#sec_'+i+'_team_'+x+'_ref_'+y)[0].value) === -1){
-                    team = team + this.conf.loose
-                    total = team
-                    $('#team_'+x+'_sec_'+i+'_pts').html(total)
-                    $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-danger text-white')
+                    team = team + this.conf.loose;
+                    total = team;
+                    $('#team_'+x+'_sec_'+i+'_pts').val(total);
+                    $('#total_pts_team_'+x+'_sec_'+i).html(total);
+                    $('#sec_'+i+'_team_'+x+'_ref_'+y).addClass('bg-danger text-white');
                   }
                 }
               }
             }
           }
         }
+      }
+    },
+    calc_total(){
+      start = 0;
+      for (var z = 0; z < $("[id^='total_pts_team_']").length; z++){
+        var team = $("[id^='total_pts_team_']")[z];
+        var teamdata = team.dataset
+        if(teamdata.team >= 0){
+          nb = Number(team.innerHTML)
+          start = start + nb
+        } else  {
+          start = 0;
+        }
+        $("#total_pts_team_"+teamdata.team).val(start);
       }
     },
     confirmDelete(t,s) {

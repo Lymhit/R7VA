@@ -16,10 +16,13 @@
             <li class="nav-item" v-for="(menu, k) in specials">
                 <a class="nav-link"  v-bind:class="{ active: k === 0 }" data-toggle="tab" :href='"#menu"+k'>Secteur {{menu.nom}}</a>
             </li>
-            <li  class="nav-item disable">
+            <li class="nav-item disable">
                 <a class="nav-link" data-toggle="modal" data-target="#secteur_Modal"><i class="fas fa-plus-circle"></i></a>
             </li>
-            <li  class="nav-item disable position-absolute float-right" style='right:0'>
+            <li class="nav-item" v-on:click="calc_total()">
+                <a class="nav-link" data-toggle="modal" data-target="#secteur_Total"><i class="fas fa-trophy"></i></a>
+            </li>
+            <li class="nav-item disable position-absolute float-right" style='right:0'>
                 <a class="nav-link" data-toggle="modal" data-target="#conf_Modal"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
@@ -33,7 +36,7 @@
                     <div class="input-group-prepend">
                         <span class="input-group-text" style="max-width:  100px;min-width:  100px;">Références</span>
                     </div>
-                    <input v-for="(ref,ref_k) in special.ref" v-on:change="add_to_ref(k,ref_k)" class="ref form-control" maxlength="1" type="text" :id="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="ref" />
+                    <input v-for="(ref,ref_k) in special.ref" v-on:keyup="add_to_ref(k,ref_k)" class="ref form-control" maxlength="1" type="text" :id="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="ref" />
                     <div v-on:click="remove_ref(k)" class="ref form-control btn btn-outline-danger" style="max-width: 41px;min-width: 41px">
                     <i class="fas fa-minus"></i>
                     </div>
@@ -43,7 +46,7 @@
                     </div>
                 <hr />
                 <div v-for="(team,team_k) in special.equipes" :id="'team_'+team_k+'_sec_'+k">
-                    <label>Équipe {{team.nom}}</label>
+                    <label>{{team_k+1}} - Équipe {{team.nom}}</label>
                     <button type="button" v-on:click="confirmDelete('team',team_k)" class="close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -51,9 +54,9 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text" style="max-width:  100px;min-width:  100px;"><i class="fas" style="margin: auto;" v-bind:class="{'fa-car-side': team.type === 1, 'fa-truck-monster': team.type === 2}"></i></span>
                         </div>
-                        <input v-for="(ref,ref_k) in special.ref" v-on:change="add_to_team_ref(k,team_k,ref_k)" maxlength="1" type="text" class="team form-control" :id="'sec_'+k+'_team_'+team_k+'_ref_'+ref_k" :data-refid="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="team.resultat[ref_k]" />
+                        <input v-for="(ref,ref_k) in special.ref" v-on:keyup="add_to_team_ref(k,team_k,ref_k)" maxlength="1" type="text" class="team form-control" :id="'sec_'+k+'_team_'+team_k+'_ref_'+ref_k" :data-refid="'sec_'+k+'_ref_'+ref_k" :placeholder="ref_k+1" :value="team.resultat[ref_k]" />
                         <div class="input-group-append  border-success" v-on:click="compare_element()">
-                            <label  class="input-group-text text-center" style="max-width: 80px;min-width: 80px"  :id="'team_'+team_k+'_sec_'+k+'_pts'">0</label>
+                            <input class="input-group-text text-center" style="max-width: 80px;min-width: 80px" :id="'team_'+team_k+'_sec_'+k+'_pts'" value="0" type="text" onclick="copyto(this)"/>
                         </div>
                     </div>
                     <br>
@@ -78,6 +81,33 @@
         </div>
     </div>
     <confirmation-modal  v-if='confirmModal' @confirm='deleteUser' @cancel="cancelDelete"></confirmation-modal>
+    <!-- Modal Total-->
+    <div class="modal fade" id="secteur_Total" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Score</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" v-for="(special,k) in specials" >
+                    <div v-for="(team,team_k) in special.equipes" v-if="k === 0" >
+                        <label>{{team_k+1}} - Équipe {{team.nom}}</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" style="max-width:  60px;min-width:  60px;"><i class="fas" style="margin: auto;" v-bind:class="{'fa-car-side': team.type === 1, 'fa-truck-monster': team.type === 2}"></i></span>
+                            </div><div class="input-group-append  border-success">
+                                <label v-for="(specialk,kk) in specials" class="input-group-text text-center" style="max-width: 60px;min-width: 60px" :data-team="team_k" :id='"total_pts_team_"+team_k+"_sec_"+kk' type="text"></label>
+                                <input class="input-group-text text-center font-weight-bold" style="max-width: 80px;min-width: 80px" :data-team_total="team_k" onclick="copyto(this)" :id='"total_pts_team_"+team_k' value="0" type="text"/>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal Secteur-->
     <div class="modal fade" id="secteur_Modal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -97,7 +127,7 @@
                           <span class="input-group-text" id="basic-addon1">Secteur</span>
                         </div>
                         <input type="text" class="form-control" id="add_secteur_name" v-on:keyup.enter="add_secteur()">
-                      </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fermer</button>
@@ -220,5 +250,12 @@
 <script src="js/vue.min.js"></script>
 <script src="js/app.js"></script>
 <script src="js/fontawesome.js"></script>
+<script>
+function copyto(t) {
+    var copyText = t;
+    copyText.select();
+    document.execCommand("copy");
+}
+</script>
 </body>
 </html>
